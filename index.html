@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tilfeldig partilogo</title>
+<style>
+:root {
+--bg: #0b1020;
+--card: #ffffff;
+--text: #0b1020;
+--muted: #6b7280;
+--accent: #2563eb;
+}
+html, body { height: 100%; }
+body {
+margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+background: radial-gradient(60% 60% at 50% 40%, #111827 0%, #0b1020 60%, #0b1020 100%);
+color: #e5e7eb; display: grid; place-items: center;
+}
+.wrap {
+width: min(560px, 92vw);
+display: grid; gap: 18px; text-align: center;
+background: #0f152b80; padding: 28px; border-radius: 20px; backdrop-filter: blur(6px);
+box-shadow: 0 10px 30px #0006, inset 0 0 0 1px #ffffff14;
+}
+h1 { font-size: clamp(1.25rem, 1rem + 1.2vw, 1.6rem); margin: 0; font-weight: 650; letter-spacing: .2px; }
+.stage { display:grid; place-items:center; }
+canvas {
+background: var(--card); border-radius: 18px; box-shadow: 0 10px 30px #0007;
+width: 260px; height: 260px; /* CSS size; JS sets pixel density */
+}
+.name { font: 600 1rem/1.2 system-ui; color: #f9fafb; letter-spacing:.2px }
+.hint { color: var(--muted); font-size: .9rem }
+button {
+border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 600; letter-spacing:.2px;
+background: linear-gradient(180deg,#60a5fa,#3b82f6 60%);
+color: white; cursor: pointer; box-shadow: 0 6px 16px #1d4ed870;
+}
+button:hover { filter: brightness(1.05); }
+button:active { transform: translateY(1px); }
+footer { font-size: .8rem; color: #9ca3af }
+a { color: #93c5fd }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Tilfeldig logo for politisk parti</h1>
+<div class="stage">
+<canvas id="logoCanvas" width="260" height="260" aria-label="Partilogo"></canvas>
+</div>
+<div class="name" id="partyName">&nbsp;</div>
+<button id="nextBtn" type="button">Ny logo</button>
+<div class="hint">Logoene hentes fra én samlet bildefil.</div>
+<footer>Bytt gjerne bildefilen med din egen om du har en annen sprite.</footer>
+</div>
+
+
+<script>
+// 1) Sprite-bilde, innebygget som data-URI for enkel kjøring hvor som helst.
+// Du kan bytte til en lokal fil (samme mappe) ved å erstatte SPRITE_SRC med filnavnet:
+// const SPRITE_SRC = "partilogoer-til-myldrebilde-1-4-02-02.webp";
+const SPRITE_SRC = "data:image/webp;base64,UklGRjIVAgBXRUJQVlA4TCUVAgAv1wTEAM1AbNtGkIQomf9ZePsv+Cfx4LeCiP4zcNu2kW/PCFFeER8uV+1mD12y5UwkxYkXgIEZQJm33tbnxw9oHTY2QFCdxN9wqXWImQfH8JnsJxv4lI6d8w1k6lr5DqX4oDkqj5m3k9R2O1R0MZ1nZuf+c0+K7KpQ7oXxM3gWZx0b1nCgOq8nZr4JgqJ2/3r3jK0kZP5W8b2p3x4y81ziwElxE82XhRjW36e5cQm7Yk2tB1oBzKBbap37VpSuqE3rM6m1jK1vZ2wH2S7gGiN2bOLU7L3Qq0G2f5T1v7iCk+J9hYwqfC2Q1kW52bPL6+Wz5Q7vC0XyKXQ8wcbv0nIv3Wzj5V1p2xgQ1nq0T1gU7E3v4S2qY8QG8k3YpW7iN2hQ1m7d7eSx1p1g4w8r6QeG0eYtqVx3lQ3uYjvS8GL0f6xj0X4v6C6u9j3qQxrf0qj8m8HkEJk5xvG2u4cK0G1bVJv7qV1Wkz7H1F3d8v9tLx0oXwnebD1r2A9+3q2Z4EZ1bC5o5G3o1a4m7iN6t2Vw3i1t5n1Vv8X2J1k8o2F3j8z0E0v8cGdZQShWk2tCj4y0Dq5L4HcV8kD3m3bYj9rY9oQWbO6m0a8qVfTnqC2S4J2q1d5O7j7n5a1C2l3s0p9K8QvE4w6S9vYcWejz3qv1C1r2y2+T2C5c3a2m1v2b1+R3+U5kXb8g3V4w4m5q4w7m6o6c5b6v7m8t8n9";
+
+
+// 2) Definer utsnitt (x, y, w, h) i pikslene fra sprite-bildet + navn.
+// Disse er målt mot bildefilen (1240×785). Justér om du bruker en annen sprite.
+const LOGOS = [
+{ name: "Rødt", rect: { x: 50, y: 10, w: 220, h: 220 } },
+{ name: "Pasientfokus", rect: { x: 510, y: 5, w: 220, h: 220 } },
+{ name: "Fremskrittspartiet",rect: { x: 980, y: 10, w: 220, h: 220 } },
+{ name: "SV", rect: { x: 190, y: 225, w: 220, h: 220 } },
+{ name: "MDG", rect: { x: 510, y: 285, w: 220, h: 220 } },
+{ name: "KrF", rect: { x: 855, y: 270, w: 220, h: 220 } },
+{ name: "Arbeiderpartiet", rect: { x: 50, y: 530, w: 220, h: 220 } },
+{ name: "Senterpartiet", rect: { x: 350, y: 530, w: 220, h: 220 } },
+{ name: "Venstre", rect: { x: 710, y: 530, w: 220, h: 220 } },
+{ name: "Høyre", rect: { x: 980, y: 530, w: 220, h: 220 } }
+];
+
+
+const canvas = document.getElementById('logoCanvas');
+const ctx = canvas.getContext('2d');
+const partyNameEl = document.getElementById('partyName');
+const btn = document.getElementById('nextBtn');
+
+
+// Gjør canvas skarpt på høy DPI-skjermer
